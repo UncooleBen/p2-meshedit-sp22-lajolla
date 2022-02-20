@@ -16,10 +16,8 @@ option(BUILD_DOCS      "Build documentation"          OFF)
 # Building on OSX #
 ###################
 if(APPLE)
-
   # Clang only
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "CLANG")
-
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # OSX Framework dependencies
     if(NOT BUILD_LIBCGL)
       include_directories( "/System/Library/Frameworks" )
@@ -29,8 +27,7 @@ if(APPLE)
     endif()
 
     # Clang configuration
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
       set(CLANG_CXX_FLAGS "-std=c++11 -m64 -Wconversion")
 
       if(BUILD_DEBUG)
@@ -49,7 +46,6 @@ if(APPLE)
 
     # GCC configuration
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-
       set(GCC_CXX_FLAGS "-std=gnu++11 -m64 -Wconversion")
 
       if(BUILD_DEBUG)
