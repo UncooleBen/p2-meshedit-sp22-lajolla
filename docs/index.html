@@ -93,6 +93,41 @@
 
     <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
 
+    <p>
+      To calculate the area weighted normal vector at a given vertex, we have to loop through all the neighboring faces
+      and calculate their area and normal vectors. This divide the problem into two subparts:
+    </p>
+
+    <p>
+      First, we need to loop through the faces (and their vertices). To do so, we use the twin iterator defined in every
+      half-edge. We notice that current->twin->next is the next starting half-edge of a new face. Therefore, we can use
+      a do-while loop to iterate through all the faces adjacent to the given vertex v.
+    </p>
+
+    <p>
+      Second, we need to calculate the area of the face triangle at a given starting half-edge. 
+      We use the half-edge that originates from the given vertex and call next three times to get three half-edges in a
+      counter-clockwise fashion. Then, the three vertices we want is just the source points of these three half-edges.
+      Once we have the coordinates of three source points, we calculate the cross product of the two vectors they form.
+      The outer product's length is the area of the parallelogram, which is proportional to the area of the face
+      triangle. Thus, we can simply accumulate these cross products and normalize them in the last step.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part3_1.png" align="middle" width="400px" />
+            <figcaption align="middle">Flat shading</figcaption>
+          </td>
+          <td>
+            <img src="images/part3_2.png" align="middle" width="400px" />
+            <figcaption align="middle">Phong shading</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
     <h3 align="middle">Part 4: Half-edge flip</h3>
 
     <h3 align="middle">Part 5: Half-edge split</h3>
