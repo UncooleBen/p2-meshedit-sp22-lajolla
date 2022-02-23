@@ -38,7 +38,14 @@ namespace CGL
   std::vector<Vector3D> BezierPatch::evaluateStep(std::vector<Vector3D> const &points, double t) const
   {
     // TODO Part 2.
-    return std::vector<Vector3D>();
+    //BezierPatch::evaluateStep(...): Very similar to BezierCurve::evaluateStep(...) in Part 1, 
+    //this recursive function takes as inputs a std::vector of 3D points and a parameter tt. 
+    //It outputs a std::vector of intermediate control points at the parameter t in the next subdivision level.
+    std::vector<Vector3D> interPoints;
+    for (int point_id= 1; point_id < points.size(); point_id++){
+      interPoints.push_back(points[point_id-1]*(1-t) + points[point_id]*t);
+    }
+    return interPoints;
   }
 
   /**
@@ -51,9 +58,16 @@ namespace CGL
   Vector3D BezierPatch::evaluate1D(std::vector<Vector3D> const &points, double t) const
   {
     // TODO Part 2.
-    return Vector3D();
+    //This function takes as inputs a std::vector of 3D points and a parameter tt.
+    // It outputs directly the final, single point that lies on the Bezier curve at the parameter tt. 
+    //This function does not output intermediate control points. 
+    //You may want to call BezierPatch::evaluateStep(...) inside this function.
+    std::vector<Vector3D> lastStepPoint = points;
+    while (lastStepPoint.size() >= 1) {
+      lastStepPoint = evaluateStep(lastStepPoint, t);
+    }
+    return lastStepPoint[0];
   }
-
   /**
    * Evaluates the Bezier patch at parameter (u, v)
    *
@@ -64,7 +78,17 @@ namespace CGL
   Vector3D BezierPatch::evaluate(double u, double v) const 
   {  
     // TODO Part 2.
-    return Vector3D();
+    //This function takes as inputs the parameter uu and vv and outputs the point that lies on the Bezier surface, 
+    //defined by the n \times nn×n controlPoints, at the parameter uu and vv.
+    // Note that controlPoints is a member variable of the BezierPatch class, 
+    //which you have access to within this function.
+    vector<Vector3D> curves_u;
+    for (int row=0; row<controlPoints.size(); row++) {
+    Vector3D curvPoint = evaluate1D(controlPoints[row], u);
+    //curves_u[row] = curvPoint;
+    curves_u.push_back(curvPoint);
+    }
+    return evaluate1D(curves_u, v);
   }
 
   Vector3D Vertex::normal( void ) const
