@@ -38,6 +38,9 @@ namespace CGL
   std::vector<Vector3D> BezierPatch::evaluateStep(std::vector<Vector3D> const &points, double t) const
   {
     // TODO Part 2.
+    //BezierPatch::evaluateStep(...): Very similar to BezierCurve::evaluateStep(...) in Part 1, 
+    //this recursive function takes as inputs a std::vector of 3D points and a parameter tt. 
+    //It outputs a std::vector of intermediate control points at the parameter t in the next subdivision level.
     std::vector<Vector3D> interPoints;
     for (int point_id= 1; point_id < points.size(); point_id++){
       interPoints.push_back(points[point_id-1]*(1-t) + points[point_id]*t);
@@ -61,7 +64,6 @@ namespace CGL
     }
     return current_points[0];
   }
-
   /**
    * Evaluates the Bezier patch at parameter (u, v)
    *
@@ -104,7 +106,46 @@ namespace CGL
   {
     // TODO Part 4.
     // This method should flip the given edge and return an iterator to the flipped edge.
-    return EdgeIter();
+    //delete one edge add new one edge
+    //delete two halfedges add two new halfedges
+    //change four vertex
+    //might change face?
+
+    HalfedgeIter h0 = e0->halfedge();
+    HalfedgeIter h3 = e0->halfedge()->twin();
+    //return if either neighbouring face of the edge is on a boundary loop. 
+    if(e0->isBoundary() ||  h0->face()->isBoundary()|| h0->twin()->face()->isBoundary() ){
+      return e0;
+    }
+    VertexIter vert0  = h0->vertex();
+    VertexIter vert1  = h3->vertex();
+    VertexIter vert3  = h0->next()->next()->vertex();
+    VertexIter vert2  = h3->next()->next()->vertex();
+    //e1/2/3/4 don't change
+    HalfedgeIter h1 =  h0->next();
+    HalfedgeIter h2 =  h1->next();
+    HalfedgeIter h4 =  h3->next();
+    HalfedgeIter h5 =  h4->next();
+    FaceIter face0 = h0->face();
+    FaceIter face1 = h3->face();
+    face0->halfedge() = h2;
+    face1->halfedge() = h1;
+    // // no new here
+    
+    h2->next() = h4; h4->next() = h0; h0->next() = h2;
+    h5->next() = h1; h1->next() = h3; h3->next() = h5; 
+    h0->vertex() = vert2; h0->face()= face0; h0->twin() = h3;
+    h3->vertex() = vert3; h3->face()= face1; h3->twin() = h0;
+    //update the change face for each halfedge;
+    h2->face() = face0; h4->face() = face0;
+    h1->face() = face1; h5->face() = face1;
+
+    vert0->halfedge() = h4;
+    vert1->halfedge() = h1;
+    vert2->halfedge() = h0;
+    vert3->halfedge() = h3;
+    e0->halfedge() = h0;
+    return e0;
   }
 
   VertexIter HalfedgeMesh::splitEdge( EdgeIter e0 )
