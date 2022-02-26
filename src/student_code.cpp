@@ -179,5 +179,53 @@ namespace CGL
 
     // 5. Copy the new vertex positions into final Vertex::position.
 
+    // Step 1
+    // 1.A. all old vertices and compute newPosition of old vertices
+    for (VertexIter iter=mesh.verticesBegin(); iter!=mesh.verticesEnd(); iter++) {
+      HalfedgeIter current_half_edge = iter->halfedge();
+      VertexIter center_vertex = current_half_edge->vertex();
+      // Set new position to zero for accumulation
+      center_vertex->newPosition = Vector3D();
+      do {
+        VertexIter neighbor_vertex = current_half_edge->next()->vertex();
+        // Accumulate neighbor old vertiex positions
+        center_vertex->newPosition += neighbor_vertex->position;
+        // Update loop variable
+        current_half_edge = current_half_edge->twin()->next();
+      } while (current_half_edge != iter->halfedge());
+      // Normalize newPosition by current vertex's degree
+      center_vertex->newPosition /= center_vertex->degree();
+    }
+    // 1.B. all old edges and compute position of new (to-be-created) vertices in edge's newPosition
+    for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
+      HalfedgeIter current_half_edge = iter->halfedge();
+      // Set new position to zero for accumulation
+      iter->newPosition = Vector3D();
+      iter->newPosition += (3.0 / 8) * current_half_edge->vertex()->position;
+      iter->newPosition += (3.0 / 8) * current_half_edge->next()->vertex()->position;
+      iter->newPosition += (1.0 / 8) * current_half_edge->next()->next()->vertex()->position;
+      iter->newPosition += (1.0 / 8) * current_half_edge->twin()->next()->next()->vertex()->position;
+    }
+
+    // Step 2 loop subdivision via edge split and edge flip
+    for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
+      mesh.splitEdge(iter);
+    }
+    for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
+      if (iter->getHalfedge()->vertex()->isNew ^ iter->getHalfedge()->next()->vertex()->isNew) {
+        mesh.flipEdge(iter);
+      }
+    }
+    
+    // Step 3 set new positions
+    for (VertexIter iter=mesh.verticesBegin(); iter!=mesh.verticesEnd(); iter++) {
+      if (iter->isNew) {
+        iter->position = iter->getEdge()->newPosition;
+      } else {
+        iter->position = iter->newPosition;
+      }
+      iter->newPosition = Vector3D();
+      iter->isNew = false;
+    }
   }
 }
