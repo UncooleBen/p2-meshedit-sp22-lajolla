@@ -20,7 +20,7 @@
       font-family: 'Source Sans Pro', sans-serif;
     }
   </style>
-  <title>CS 184 Mesh Editor</title>
+  <title>CS 284 Mesh Editor</title>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
 </head>
@@ -28,25 +28,116 @@
 
 <body>
 
-  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2020</h1>
+  <h1 align="middle">CS 284: Computer Graphics and Imaging, Spring 2022</h1>
   <h1 align="middle">Project 2: Mesh Editor</h1>
-  <h2 align="middle">YOUR NAME, CS184-??</h2>
+  <h2 align="middle">Yang Huang, Juntao Peng, CS184-LaJolla</h2>
 
   <br><br>
 
   <div>
 
     <h2 align="middle">Overview</h2>
-    <p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole.
+    <p>In this project we first implemented bezier curves and surfaces, one of the geometry bedrocks of computer
+      graphics. Then we used half-edge data structure to represent mesh grid.
       Share your thoughts on what interesting things you've learned from completing the project.</p>
 
     <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
 
     <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
 
-    <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
-      column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+    <p>
+      De Casteljau's algorithm is a recursive approach to use linear interpolation to evaluate points on a Bezier curve.
+      In our implementation, we called lerp function on every neighboring pair of control points, making the total
+      number of control points to decrease by one. With this fundamental evaluateStep function, we called it repeatedly
+      until there is only one control point. Such a point is what we expected to be on the curve.
     </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part1_1.png" align="middle" width="600px" />
+            <figcaption align="middle">Evaluation of my_curve</figcaption>
+          </td>
+          <td>
+            <img src="images/part1_2.png" align="middle" width="600px" />
+            <figcaption align="middle">Evaluation of my_curve with different t</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
+
+    <p>
+      De Casteljau's algorithm can be extend to a 2D patch circumstance. We first used the 1D evaluateStep function to
+      evaluate every row of the n by n control points grid with a fixed linear interpolation parameter of u. After above
+      step, we would get a set of points which are located on the original row bezier curves respectively. We view this
+      group of points as new control points. Finally, we perform de Casteljau's algorithm on these new control points
+      with a linear interpolation parameter of v. In this dynamic process of altering u and v, the set of possible final
+      point locations is the patch, or 2D Bezier surface we want.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part2.png" align="middle" width="600px" />
+            <figcaption align="middle">Evaluation of teapot.bez</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 align="middle">Section II: Sampling</h2>
+
+    <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
+
+    <p>
+      To calculate the area weighted normal vector at a given vertex, we have to loop through all the neighboring faces
+      and calculate their area and normal vectors. This divide the problem into two subparts:
+    </p>
+
+    <p>
+      First, we need to loop through the faces (and their vertices). To do so, we use the twin iterator defined in every
+      half-edge. We notice that current->twin->next is the next starting half-edge of a new face. Therefore, we can use
+      a do-while loop to iterate through all the faces adjacent to the given vertex v.
+    </p>
+
+    <p>
+      Second, we need to calculate the area of the face triangle at a given starting half-edge. 
+      We use the half-edge that originates from the given vertex and call next three times to get three half-edges in a
+      counter-clockwise fashion. Then, the three vertices we want is just the source points of these three half-edges.
+      Once we have the coordinates of three source points, we calculate the cross product of the two vectors they form.
+      The outer product's length is the area of the parallelogram, which is proportional to the area of the face
+      triangle. Thus, we can simply accumulate these cross products and normalize them in the last step.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part3_1.png" align="middle" width="400px" />
+            <figcaption align="middle">Flat shading</figcaption>
+          </td>
+          <td>
+            <img src="images/part3_2.png" align="middle" width="400px" />
+            <figcaption align="middle">Phong shading</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h3 align="middle">Part 4: Half-edge flip</h3>
+
+    <h3 align="middle">Part 5: Half-edge split</h3>
+
+    <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+
+    <h2 align="middle">Section III: Optional Extra Credit</h2>
+    <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+
+    <h3 align="middle">Part 7: Design your own mesh!</h3>
 
     <div align="middle">
       <table style="width=100%">
@@ -74,31 +165,7 @@
       </table>
     </div>
 
-
-    <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
-
-
-
-    <h2 align="middle">Section II: Sampling</h2>
-
-    <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
-
-
-    <h3 align="middle">Part 4: Half-edge flip</h3>
-
-
-    <h3 align="middle">Part 5: Half-edge split</h3>
-
-
-    <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
-
-
-
-    <h2 align="middle">Section III: Optional Extra Credit</h2>
-    <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
-
-    <h3 align="middle">Part 7: Design your own mesh!</h3>
-
 </body>
+
 
 </html>
