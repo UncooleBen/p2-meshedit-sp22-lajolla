@@ -184,17 +184,22 @@ namespace CGL
     for (VertexIter iter=mesh.verticesBegin(); iter!=mesh.verticesEnd(); iter++) {
       HalfedgeIter current_half_edge = iter->halfedge();
       VertexIter center_vertex = current_half_edge->vertex();
-      // Set new position to zero for accumulation
-      center_vertex->newPosition = Vector3D();
+      double n = center_vertex->degree();
+      double u;
+      if (n == 3) {
+        u = 3.0 / 16;
+      } else {
+        u = 3.0 / 8 / n;
+      }
+      // Set new position's base value to (1 - n*u) * center_vertex_position
+      center_vertex->newPosition = (1 - n * u) * center_vertex->position;
       do {
         VertexIter neighbor_vertex = current_half_edge->next()->vertex();
         // Accumulate neighbor old vertiex positions
-        center_vertex->newPosition += neighbor_vertex->position;
+        center_vertex->newPosition += neighbor_vertex->position * u;
         // Update loop variable
         current_half_edge = current_half_edge->twin()->next();
       } while (current_half_edge != iter->halfedge());
-      // Normalize newPosition by current vertex's degree
-      center_vertex->newPosition /= center_vertex->degree();
     }
     // 1.B. all old edges and compute position of new (to-be-created) vertices in edge's newPosition
     for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
