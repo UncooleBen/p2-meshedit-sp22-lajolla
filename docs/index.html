@@ -105,7 +105,7 @@
     </p>
 
     <p>
-      Second, we need to calculate the area of the face triangle at a given starting half-edge. 
+      Second, we need to calculate the area of the face triangle at a given starting half-edge.
       We use the half-edge that originates from the given vertex and call next three times to get three half-edges in a
       counter-clockwise fashion. Then, the three vertices we want is just the source points of these three half-edges.
       Once we have the coordinates of three source points, we calculate the cross product of the two vectors they form.
@@ -130,7 +130,40 @@
 
     <h3 align="middle">Part 4: Half-edge flip</h3>
 
+    <p>
+      To flip an edge of two triangles, we use local variables to store all half-edges, vertices, and faces involved in
+      order to have a clear picture of what we are going to modify. During the process, we first delete two half-edges
+      and one edge. After deletion, we add two new half-edges and one edge, and then totally reorgranize the pointers in
+      these mesh elements to get the two side-by-side new triangles.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part4_1.png" align="middle" width="400px" />
+            <figcaption align="middle">Before edge flip</figcaption>
+          </td>
+          <td>
+            <img src="images/part4_2.png" align="middle" width="400px" />
+            <figcaption align="middle">After edge flip</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      Funny thing during the debugging: Since we used a fully commadline-based build and debug workflow with cmake on
+      MacOS, we chose to use "lldb" as our debug tool. The problem was we naturally thought "lldb" was just an apple
+      version of "gdb" with exact the same command set but it turned out "lldb" use different commands in its subset.
+      That caused a lot of trouble because we kept typing in gdb commands and getting errors. 
+    </p>
+
     <h3 align="middle">Part 5: Half-edge split</h3>
+
+    <p>
+      TODO: Wait for Yang's input.
+    </p>
 
     <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
 
