@@ -105,7 +105,7 @@
     </p>
 
     <p>
-      Second, we need to calculate the area of the face triangle at a given starting half-edge. 
+      Second, we need to calculate the area of the face triangle at a given starting half-edge.
       We use the half-edge that originates from the given vertex and call next three times to get three half-edges in a
       counter-clockwise fashion. Then, the three vertices we want is just the source points of these three half-edges.
       Once we have the coordinates of three source points, we calculate the cross product of the two vectors they form.
@@ -130,41 +130,128 @@
 
     <h3 align="middle">Part 4: Half-edge flip</h3>
 
-    <h3 align="middle">Part 5: Half-edge split</h3>
-
-    <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
-
-    <h2 align="middle">Section III: Optional Extra Credit</h2>
-    <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
-
-    <h3 align="middle">Part 7: Design your own mesh!</h3>
+    <p>
+      To flip an edge of two triangles, we use local variables to store all half-edges, vertices, and faces involved in
+      order to have a clear picture of what we are going to modify. During the process, we first delete two half-edges
+      and one edge. After deletion, we add two new half-edges and one edge, and then totally reorgranize the pointers in
+      these mesh elements to get the two side-by-side new triangles.
+    </p>
 
     <div align="middle">
       <table style="width=100%">
         <tr>
           <td>
-            <img src="images/image1.png" align="middle" width="400px" />
-            <figcaption align="middle">Caption goes here.</figcaption>
+            <img src="images/part4_1.png" align="middle" width="400px" />
+            <figcaption align="middle">Before edge flip</figcaption>
           </td>
           <td>
-            <img src="images/image2.png" align="middle" width="400px" />
-            <figcaption align="middle">Caption goes here.</figcaption>
-          </td>
-        </tr>
-        <br>
-        <tr>
-          <td>
-            <img src="images/image3.png" align="middle" width="400px" />
-            <figcaption align="middle">Caption goes here.</figcaption>
-          </td>
-          <td>
-            <img src="images/image4.png" align="middle" width="400px" />
-            <figcaption align="middle">Caption goes here.</figcaption>
+            <img src="images/part4_2.png" align="middle" width="400px" />
+            <figcaption align="middle">After edge flip</figcaption>
           </td>
         </tr>
       </table>
     </div>
 
+    <p>
+      Funny thing during the debugging: Since we used a fully commadline-based build and debug workflow with cmake on
+      MacOS, we chose to use "lldb" as our debug tool. The problem was we naturally thought "lldb" was just an apple
+      version of "gdb" with exact the same command set but it turned out "lldb" use different commands in its subset.
+      That caused a lot of trouble because we kept typing in gdb commands and getting errors.
+    </p>
+
+    <h3 align="middle">Part 5: Half-edge split</h3>
+
+    <p>
+      First, we new one vertex, two triangles and three edges. We asssign the position of the new vertex to the midpoint
+      of the original edge.
+      We basically follow this order:
+      1. For each vertex, edge, and face, set its halfedge pointer;
+      2. For each half-edge, set its next, twin, vertex, edge, and face pointer to the correct element.
+      After implementing this, we met a strange problem. If we split this particular edge (after splitting once), the
+      face adjacent to one of the edges on the upper triangle we split gets deleted.
+      And after using lldb and check_for() function, we found we fail to correctly assign the new faces to those
+      unmodified edges.
+      Sometimes you only notice those new edges but fail to change those quite invisible edges. It's wise to set
+      everything from the start.
+    </p>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/edge split.png" align="middle" width="400px" />
+            <figcaption align="middle">A mesh before and after edge splits</figcaption>
+          </td>
+          <td>
+            <img src="images/edge flip and edge split.png" align="middle" width="400px" />
+            <figcaption align="middle">A combination of both edge splits and edge flips</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+
+    <p>
+      To implement loop subdivision algorithm. The first thing is to make sure one wrote a COMPLETELY correct edge flip
+      and edge split algorithm in part 4 and 5. This is the first lession we've learned during task 6. Once edge flip
+      and edge split is correct, we perform the three-step implementation as described in the guideline. 1.A We loop
+      through all the old vertices and compute their new position in their newPosition fields. 1.B We loop through all
+      the old edges and compute their new position in their newPosition fields using 1/8, 1/8, 3/8, 3/8 weights. 2.
+      Split all the edges in our mesh then flip only those edges connection a new vertex and an old vertex. 3. We loop
+      through all vertices, if it is new we set its position to its edge's newPosition. If it is old we set its position
+      to its own newPosition.
+    </p>
+
+    <p>
+      Another key point in during implementing loop subdivision is the decision on which edge to flip. We found that
+      simply flipping edges connecting a new vertex and an old vertex would not work since there are new-old vertex
+      edges along the old edges but we don't need to flip these ones. To handle this problem, we took advantage of the
+      isNew field in vertex and edges. We set the splited vertex's isNew field to true and two newly created edges'
+      isNew field to true. With that, we derived the condition "(vertexA->isNew XOR vertexB->isNew) AND edge->isNew" to
+      be the one that helps us decide which edge to flip during the flipping stage.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part6_1.png" align="middle" width="400px" />
+            <figcaption align="middle">Sharp edges and corners</figcaption>
+          </td>
+          <td>
+            <img src="images/part6_2.png" align="middle" width="400px" />
+            <figcaption align="middle">Sharp edges and corners after subdivision</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      What happens to sharp corners and edges? The sharp corners and edges are not averaged as their flat partners.
+      Can you reduce this effect by pre-splitting some edges? We tried as below, now our subdivided cube becomes a
+      smooth regular tetrahedron it is symmetric and beautiful.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/part6_3.png" align="middle" width="400px" />
+            <figcaption align="middle">cube.dae</figcaption>
+          </td>
+          <td>
+            <img src="images/part6_4.png" align="middle" width="400px" />
+            <figcaption align="middle">cude.dae after subdivision</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+
+    <h2 align="middle">Section III: Optional Extra Credit</h2>
+    <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+
+    <h3 align="middle">Part 7: Design your own mesh!</h3>
 </body>
 
 
