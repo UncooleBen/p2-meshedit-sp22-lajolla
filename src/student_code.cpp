@@ -175,13 +175,16 @@ namespace CGL
     Vector3D vert1_pos  = h3->vertex()->position;
     VertexIter verta  = h0->next()->next()->vertex();
     VertexIter vertd  = h3->next()->next()->vertex();
+    VertexIter vertb = h0->vertex();
+    VertexIter vertc = h0->twin()->vertex();
     FaceIter faceabc = h0->face();
     FaceIter facebdc = h3->face();
 
     Vector3D vertm_pos = (vert0_pos + vert1_pos)/2;
     VertexIter vertm = newVertex();
-    vertm->isNew = true;
     vertm->position = vertm_pos;
+    vertm->isNew = true;
+    // vertc->isNew = false;
     //new half_edge()
     HalfedgeIter h0_mc = newHalfedge();
     h0_mc->vertex() = vertm;
@@ -199,12 +202,15 @@ namespace CGL
     EdgeIter edge_bm = newEdge();
     EdgeIter edge_am = newEdge();
     EdgeIter edge_md = newEdge();
+    edge_bm->newPosition = e0->newPosition;
+    edge_am->isNew = true;
+    edge_md->isNew = true;
     //EdgeIter edge_mc = newEdge();
     // two new faces
     FaceIter face_amc = newFace();
     FaceIter face_mdc = newFace();
     //vert edge face
-    vertm->halfedge() = h3_mb;
+    vertm->halfedge() = h0_mc;
     edge_am->halfedge() = h_am;
     edge_md->halfedge() = h_md;
     //edge_mc->halfedge() = h3;
@@ -296,7 +302,6 @@ namespace CGL
       iter->newPosition += (3.0 / 8) * current_half_edge->next()->vertex()->position;
       iter->newPosition += (1.0 / 8) * current_half_edge->next()->next()->vertex()->position;
       iter->newPosition += (1.0 / 8) * current_half_edge->twin()->next()->next()->vertex()->position;
-      // std::cout << iter->newPosition << std::endl;
     }
 
     // Step 2 loop subdivision via edge split and edge flip
@@ -308,22 +313,33 @@ namespace CGL
       iter = next;
     }
 
-    // for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
-    //   if (iter->halfedge()->vertex()->isNew ^ iter->halfedge()->next()->vertex()->isNew) {
-    //     mesh.flipEdge(iter);
-    //   }
-    // }
+    for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
+      if ((iter->halfedge()->vertex()->isNew ^ iter->halfedge()->next()->vertex()->isNew) && iter->isNew){
+        mesh.flipEdge(iter);
+      }
+    }
     
     // Step 3 set new positions
     for (VertexIter iter=mesh.verticesBegin(); iter!=mesh.verticesEnd(); iter++) {
       if (iter->isNew) {
-        iter->position = iter->halfedge()->edge()->newPosition;
+        HalfedgeCIter h_iter = iter->halfedge();
+        do {
+          if (!h_iter->edge()->isNew) {
+            iter->position = h_iter->edge()->newPosition;
+            break;
+          }
+          h_iter = h_iter->twin()->next();
+        } while (h_iter != iter->halfedge());
       } else {
         iter->position = iter->newPosition;
       }
-      cout << iter->position << endl;
       iter->newPosition = Vector3D();
       iter->isNew = false;
+    }
+
+    for (EdgeIter iter=mesh.edgesBegin(); iter!=mesh.edgesEnd(); iter++) {
+      iter->isNew = false;
+      iter->newPosition = Vector3D();
     }
   }
 }
