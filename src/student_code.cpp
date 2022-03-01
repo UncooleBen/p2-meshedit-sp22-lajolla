@@ -185,10 +185,8 @@ namespace CGL
     //new half_edge()
     HalfedgeIter h0_mc = newHalfedge();
     h0_mc->vertex() = vertm;
-    h0_mc->next() = h0->next();
     HalfedgeIter h3_mb = newHalfedge(); 
     h3_mb->vertex() = vertm;
-    h3_mb->next() = h3->next();
     HalfedgeIter h_am = newHalfedge();
     h_am -> vertex() = verta;
     HalfedgeIter h_ma = newHalfedge();
@@ -198,24 +196,35 @@ namespace CGL
     HalfedgeIter h_md = newHalfedge();
     h_md -> vertex() = vertm;
     //new edges
-    EdgeIter edge_bm = e0;
+    EdgeIter edge_bm = newEdge();
     EdgeIter edge_am = newEdge();
     EdgeIter edge_md = newEdge();
-    EdgeIter edge_mc = newEdge();
+    //EdgeIter edge_mc = newEdge();
     // two new faces
     FaceIter face_amc = newFace();
     FaceIter face_mdc = newFace();
     //vert edge face
+<<<<<<< HEAD
     vertm->halfedge() = h3_mb;
+=======
+    vertm->halfedge() = h_ma;
+    check_for(vertm);
+>>>>>>> yang
     edge_am->halfedge() = h_am;
     edge_md->halfedge() = h_md;
-    edge_mc->halfedge() = h0_mc;
+    //edge_mc->halfedge() = h3;
+    e0 -> halfedge() = h0_mc;
+    edge_bm -> halfedge() = h0;
     faceabc->halfedge() = h2;
     facebdc->halfedge() = h4;
     face_amc -> halfedge() = h1;
     face_mdc -> halfedge() = h5;
 
     //each half-edge
+    h0 -> twin() = h3_mb; h0 -> face() = faceabc; h0 -> edge() = edge_bm;
+
+    h3 -> twin() = h0_mc; h3 -> face() = face_mdc; h3 -> edge()= e0;
+
     h_am -> next() = h0_mc; h0_mc->next() = h1; h1->next() = h_am;
     h_am -> twin() = h_ma; h_am -> edge() = edge_am; h_am -> face() = face_amc;
     
@@ -228,13 +237,12 @@ namespace CGL
     h_dm -> next () = h3_mb; h3_mb->next() = h4; h4->next() = h_dm;
     h_dm -> twin() = h_md; h_dm -> edge() = edge_md; h_dm -> face() = facebdc;
     
-    h0_mc -> twin() = h3; h0_mc -> edge() = edge_mc; h0_mc -> face() = face_amc; 
+    h0_mc -> twin() = h3; h0_mc -> edge() = e0; h0_mc -> face() = face_amc; 
 
     h3_mb -> twin() = h0; h3_mb -> edge() = edge_bm; h3_mb -> face() = facebdc;
-    
-    h0 -> twin() = h3_mb; h0 -> face() = faceabc; h0 -> edge() = e0;
-
-    h3 -> twin() = h0_mc; h3 -> face() = face_mdc; h3 -> edge()= edge_mc;
+    //assign face
+    h0 -> face() = faceabc; h1 -> face() = face_amc; h2 -> face() = faceabc;
+    h3 -> face() = face_mdc; h4 -> face() = facebdc; h5 -> face() = face_mdc;
     return vertm;
   }
 
