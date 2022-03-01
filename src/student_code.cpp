@@ -143,7 +143,7 @@ namespace CGL
     face0->halfedge() = h2;
     face1->halfedge() = h1;
     // // no new here
-    
+
     h2->next() = h4; h4->next() = h0; h0->next() = h2;
     h5->next() = h1; h1->next() = h3; h3->next() = h5; 
     h0->vertex() = vert2; h0->face()= face0; h0->twin() = h3;
@@ -165,7 +165,92 @@ namespace CGL
     // TODO Part 5.
     // This method should split the given edge and return an iterator to the newly inserted vertex.
     // The halfedge of this vertex should point along the edge that was split, rather than the new edges.
-    return VertexIter();
+    //Draw a simple mesh, such as the pair of triangles (a,b,c)(a,b,c) and (c,b,d)(c,b,d) above, and write down a list of all elements, i.e., half-edges, vertices, edges, and faces, in this mesh.
+    //Draw the mesh after the remeshing operation and again write down a list of all elements in the now modified mesh.
+    //For every element in the modified mesh, set all of its pointers to the correct element in the modified mesh, even if the element being pointed to has not changed:
+    
+    //For each vertex, edge, and face, set its halfedge pointer.
+    //For each half-edge, set its next, twin, vertex, edge, and face pointer to the correct element. You can use Halfedge::setNeighbors(...) to set all pointers of a half-edge at once.
+  
+    HalfedgeIter h0 = e0->halfedge();
+    HalfedgeIter h3 = e0->halfedge()->twin();
+    HalfedgeIter h1 =  h0->next();
+    HalfedgeIter h2 =  h1->next();
+    HalfedgeIter h4 =  h3->next();
+    HalfedgeIter h5 =  h4->next();
+    //return if either neighbouring face of the edge is on a boundary loop. 
+    if(h0->face()->isBoundary()|| h0->twin()->face()->isBoundary() ){
+      return VertexIter();
+    } 
+    // new mesh vertex  two new triangles, three new edges, 
+    Vector3D vert0_pos  = h0->vertex()->position;
+    Vector3D vert1_pos  = h3->vertex()->position;
+    VertexIter verta  = h0->next()->next()->vertex();
+    VertexIter vertd  = h3->next()->next()->vertex();
+    FaceIter faceabc = h0->face();
+    FaceIter facebdc = h3->face();
+    cout<< "faceabc"<< endl;
+    check_for(faceabc);
+    cout << "facebdc" << endl;
+    check_for(facebdc);
+
+    Vector3D vertm_pos = (vert0_pos + vert1_pos)/2;
+    VertexIter vertm = newVertex();
+    vertm->position = vertm_pos;
+    //new half_edge()
+    HalfedgeIter h0_mc = newHalfedge();
+    h0_mc->vertex() = vertm;
+    h0_mc->next() = h0->next();
+    HalfedgeIter h3_mb = newHalfedge(); 
+    h3_mb->vertex() = vertm;
+    h3_mb->next() = h3->next();
+    HalfedgeIter h_am = newHalfedge();
+    h_am -> vertex() = verta;
+    HalfedgeIter h_ma = newHalfedge();
+    h_ma -> vertex() = vertm;
+    HalfedgeIter h_dm = newHalfedge();
+    h_dm -> vertex() = vertd;
+    HalfedgeIter h_md = newHalfedge();
+    h_md -> vertex() = vertm;
+    //new edges
+    EdgeIter edge_bm = e0;
+    EdgeIter edge_am = newEdge();
+    EdgeIter edge_md = newEdge();
+    EdgeIter edge_mc = newEdge();
+    // two new faces
+    FaceIter face_amc = newFace();
+    FaceIter face_mdc = newFace();
+    //vert edge face
+    vertm->halfedge() = h0_mc;
+    edge_am->halfedge() = h_am;
+    edge_md->halfedge() = h_md;
+    edge_mc->halfedge() = h0_mc;
+    faceabc->halfedge() = h2;
+    facebdc->halfedge() = h4;
+    face_amc -> halfedge() = h1;
+    face_mdc -> halfedge() = h5;
+
+    //each half-edge
+    h_am -> next() = h0_mc; h0_mc->next() = h1; h1->next() = h_am;
+    h_am -> twin() = h_ma; h_am -> edge() = edge_am; h_am -> face() = face_amc;
+    
+    h_ma -> next() = h2; h2->next() = h0; h0->next() = h_ma;
+    h_ma -> twin() = h_am; h_ma -> edge() = edge_am; h_ma -> face() = faceabc;
+
+    h_md -> next() = h5; h5 -> next() = h3; h3 -> next() = h_md;
+    h_md -> twin() = h_dm; h_md -> edge() = edge_md; h_md -> face() = face_mdc;
+
+    h_dm -> next () = h3_mb; h3_mb->next() = h4; h4->next() = h_dm;
+    h_dm -> twin() = h_md; h_dm -> edge() = edge_md; h_dm -> face() = facebdc;
+    
+    h0_mc -> twin() = h3; h0_mc -> edge() = edge_mc; h0_mc -> face() = face_amc; 
+
+    h3_mb -> twin() = h0; h3_mb -> edge() = edge_bm; h3_mb -> face() = facebdc;
+    
+    h0 -> twin() = h3_mb; h0 -> face() = faceabc; h0 -> edge() = e0;
+
+    h3 -> twin() = h0_mc; h3 -> face() = face_mdc; h3 -> edge()= edge_mc;
+    return vertm;
   }
 
 
