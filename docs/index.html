@@ -178,6 +178,15 @@
       to its own newPosition.
     </p>
 
+    <p>
+      Another key point in during implementing loop subdivision is the decision on which edge to flip. We found that
+      simply flipping edges connecting a new vertex and an old vertex would not work since there are new-old vertex
+      edges along the old edges but we don't need to flip these ones. To handle this problem, we took advantage of the
+      isNew field in vertex and edges. We set the splited vertex's isNew field to true and two newly created edges'
+      isNew field to true. With that, we derived the condition "(vertexA->isNew XOR vertexB->isNew) AND edge->isNew" to
+      be the one that helps us decide which edge to flip during the flipping stage.
+    </p>
+
     <div align="middle">
       <table style="width=100%">
         <tr>
