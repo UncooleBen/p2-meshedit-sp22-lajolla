@@ -162,13 +162,17 @@
     <h3 align="middle">Part 5: Half-edge split</h3>
 
     <p>
-     First, we new one vertex, two triangles and three edges. We asssign the position of the new vertex to the midpoint of the original edge.
-     We basically follow this order: 
-     1. For each vertex, edge, and face, set its halfedge pointer;
-     2. For each half-edge, set its next, twin, vertex, edge, and face pointer to the correct element. 
-     After implementing this, we met a strange problem. If we split this particular edge (after splitting once), the face adjacent to one of the edges on the upper triangle we split gets deleted.
-    And after using lldb and check_for() function, we found we fail to correctly assign the new faces to those unmodified edges.
-    Sometimes you only notice those new edges but fail to change those quite invisible edges. It's wise to set everything from the start.
+      First, we new one vertex, two triangles and three edges. We asssign the position of the new vertex to the midpoint
+      of the original edge.
+      We basically follow this order:
+      1. For each vertex, edge, and face, set its halfedge pointer;
+      2. For each half-edge, set its next, twin, vertex, edge, and face pointer to the correct element.
+      After implementing this, we met a strange problem. If we split this particular edge (after splitting once), the
+      face adjacent to one of the edges on the upper triangle we split gets deleted.
+      And after using lldb and check_for() function, we found we fail to correctly assign the new faces to those
+      unmodified edges.
+      Sometimes you only notice those new edges but fail to change those quite invisible edges. It's wise to set
+      everything from the start.
     </p>
     <div align="middle">
       <table style="width=100%">
@@ -224,7 +228,8 @@
 
     <p>
       What happens to sharp corners and edges? The sharp corners and edges are not averaged as their flat partners.
-      Can you reduce this effect by pre-splitting some edges? We tried as below, but it did not work well.
+      Can you reduce this effect by pre-splitting some edges? We tried as below, now our subdivided cube becomes a
+      smooth regular tetrahedron it is symmetric and beautiful.
     </p>
 
     <div align="middle">
