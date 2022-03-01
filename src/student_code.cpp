@@ -204,12 +204,7 @@ namespace CGL
     FaceIter face_amc = newFace();
     FaceIter face_mdc = newFace();
     //vert edge face
-<<<<<<< HEAD
     vertm->halfedge() = h3_mb;
-=======
-    vertm->halfedge() = h_ma;
-    check_for(vertm);
->>>>>>> yang
     edge_am->halfedge() = h_am;
     edge_md->halfedge() = h_md;
     //edge_mc->halfedge() = h3;
